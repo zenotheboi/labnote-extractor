@@ -6,8 +6,11 @@ Full call order (eventual):
     dispatch:    classify → registry.dispatch (→ domain validator)
     emit:        assemble schema-valid JSON, validate, write output
 
-Phase 1 short-circuits to: preprocess → VLM whole-page → fill schema shape → JSON.
-Strict schema validation is wired in Phase 2.
+Phase 2 adds the trust layer on top of Phase 1:
+    preprocess → VLM whole-page → fill schema shape
+        → re-derive J→I→Q→n→mass and write calculations.self_consistency
+        → STRICT schema validation (fail loudly)
+        → JSON.
 
 Import the semantics plugins so they self-register before dispatch is called.
 """
@@ -21,8 +24,13 @@ import re
 import sys
 from pathlib import Path
 
+import jsonschema
+
 # Trigger plugin self-registration
 import pipeline.semantics.electrodeposition  # noqa: F401
+from pipeline.semantics.electrodeposition import validate_deposition
+
+_SCHEMA_PATH = Path(__file__).parent / "schema" / "electrodeposition.schema.json"
 
 
 def run(image_path: str, output_path: str | None = None) -> dict:
@@ -44,10 +52,110 @@ def run(image_path: str, output_path: str | None = None) -> dict:
 
     result = _vlm_extract(image_path)
 
+    # --- Phase 2: trust layer ---
+    _attach_self_consistency(result)   # re-derive the electrochem chain
+
+    # Write the artefact BEFORE validating, so a schema failure still leaves an
+    # inspectable file on disk (the exception below is the loud signal).
     if output_path:
         Path(output_path).write_text(json.dumps(result, indent=2))
 
+    _validate_schema(result)           # strict — raises on any nonconformance
+
     return result
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — trust layer: re-derive the electrochemistry, cross-check the page
+# ---------------------------------------------------------------------------
+
+def _attach_self_consistency(result: dict) -> None:
+    """Re-derive J→I→Q→n→mass and record the check under calculations.
+
+    Degrades gracefully: if the primary inputs (current density, electrode area,
+    deposition time) aren't all present, no self_consistency block is written
+    rather than crashing — perception output still stands.
+    """
+    runs = result.get("runs") or []
+    calc = result.get("calculations")
+    if not runs or not isinstance(calc, dict):
+        return
+
+    run0 = runs[0]
+    J     = _field_float(run0, "current_density")   # mA/cm²
+    area  = _field_float(run0, "electrode_area")    # cm²
+    t_min = _field_float(run0, "duration")          # minutes
+    if None in (J, area, t_min):
+        return
+
+    inputs = {
+        "J_mA_cm2": J,
+        "area_cm2": area,
+        "t_min":    t_min,
+        # z and molar mass come from reference/chem_resolve in Phase 4;
+        # fall back to Li defaults until then.
+        "z":        1,
+        "M_g_mol":  6.94,
+    }
+
+    # The intermediate RESULTS the chemist wrote, as read off the page. Only
+    # include a value if it was actually extracted (don't fabricate t_s).
+    written = {
+        "I_A":    _field_float(calc, "current"),
+        "Q_C":    _field_float(calc, "charge"),
+        "n_mol":  _field_float(calc, "moles_deposited"),
+        "mass_g": _field_float(calc, "mass_deposited"),
+    }
+    extracted = {k: v for k, v in written.items() if v is not None}
+
+    report = validate_deposition(inputs, extracted)
+    calc["self_consistency"] = _report_to_dict(report)
+
+
+def _report_to_dict(report) -> dict:
+    """Serialise a ValidationReport into the schema's selfConsistency shape."""
+    return {
+        "all_passed": bool(report.all_passed),
+        "checks": [
+            {
+                "name":      c.name,
+                "derived":   round(float(c.derived), 12),
+                "extracted": c.extracted,
+                "unit":      c.unit,
+                "rel_error": (round(float(c.rel_error), 6)
+                              if c.rel_error is not None else None),
+                "ok":        c.ok,
+            }
+            for c in report.checks
+        ],
+    }
+
+
+def _field_float(obj: dict, key: str):
+    """Pull obj[key]['value'] (the field envelope) and coerce it to float."""
+    field = obj.get(key) if isinstance(obj, dict) else None
+    if not isinstance(field, dict):
+        return None
+    return _to_float(field.get("value"))
+
+
+def _to_float(value):
+    """Extract the leading numeric literal from a number or unit-bearing string."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        m = re.search(r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?", value)
+        if m:
+            return float(m.group(0))
+    return None
+
+
+def _validate_schema(result: dict) -> None:
+    """Validate ``result`` against the electrodeposition schema. Fail loudly."""
+    schema = json.loads(_SCHEMA_PATH.read_text())
+    jsonschema.validate(instance=result, schema=schema)
 
 
 def _load_api_key() -> str:
@@ -216,5 +324,17 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python main.py <image_path> [output.json]")
         sys.exit(1)
-    out = run(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
+    out_path = sys.argv[2] if len(sys.argv) > 2 else None
+    try:
+        out = run(sys.argv[1], out_path)
+    except jsonschema.ValidationError as exc:
+        loc = " → ".join(str(p) for p in exc.absolute_path) or "<root>"
+        print("SCHEMA VALIDATION FAILED (output is NOT schema-valid)",
+              file=sys.stderr)
+        print(f"  at: {loc}", file=sys.stderr)
+        print(f"  {exc.message}", file=sys.stderr)
+        if out_path:
+            print(f"  (the offending output was still written to {out_path} "
+                  "for inspection)", file=sys.stderr)
+        sys.exit(2)
     print(json.dumps(out, indent=2, default=str))

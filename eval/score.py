@@ -1,8 +1,13 @@
 """
 eval/score.py
 ==============
-Compare pipeline output (or baseline output) against hand-transcribed ground
-truth and report evaluation metrics.
+Compare pipeline output (or baseline output) against the reference labels and
+report evaluation metrics.
+
+NOTE: the reference labels in eval/draft_labels/ are a DRAFT (VLM-drafted, not
+yet human-verified). Scores against them are indicative only — see the
+ground-truth warning in CLAUDE.md. They become trustworthy once a human who can
+read the hand + check the chemistry verifies them.
 
 Metrics:
     CER  — Character Error Rate  (for text fields: prose, labels, notes)
@@ -12,7 +17,7 @@ Metrics:
     schema_pass  — bool, did the output validate against the JSON schema?
 
 Usage:
-    python -m eval.score --pred pipeline_output.json --gt eval/ground_truth/page57.json
+    python -m eval.score --pred pipeline_output.json --gt eval/draft_labels/page57.draft.json
 """
 
 from __future__ import annotations
@@ -28,7 +33,8 @@ def score(pred: Dict, gt: Dict, schema_path: str) -> Dict[str, float]:
     pred : dict
         Pipeline or baseline extraction output.
     gt : dict
-        Hand-transcribed ground truth (eval/ground_truth/*.json).
+        Reference labels (eval/draft_labels/*.draft.json) — VLM-drafted DRAFT,
+        not yet human-verified.
     schema_path : str
         Path to the experiment-type JSON schema to check schema_pass.
 

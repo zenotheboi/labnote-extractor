@@ -51,12 +51,14 @@ pip install py2opsin
 ```bash
 python -m eval.score \
     --pred pipeline_output.json \
-    --gt   eval/ground_truth/page57.json
+    --gt   eval/draft_labels/page57.draft.json
 ```
 
-> **Ground-truth warning**: `eval/ground_truth/page57.json` was VLM-drafted
-> and is a **draft**. A human who can read the handwriting AND verify the
-> chemistry must validate it before any score is trusted. See `CLAUDE.md §eval`.
+> **No verified ground truth yet**: `eval/draft_labels/page57.draft.json` was
+> VLM-drafted and is a **draft**, not a trusted reference. The folder is named
+> `draft_labels/` (not `ground_truth/`) on purpose — a human who can read the
+> handwriting AND verify the chemistry must validate it before any score means
+> anything. See `CLAUDE.md §eval`.
 
 ## Repo layout
 
@@ -80,7 +82,7 @@ labnote-extractor/
 │   ├── electrodeposition.schema.json
 │   └── spectroscopy.schema.json  stub
 ├── eval/
-│   ├── ground_truth/page57.json
+│   ├── draft_labels/page57.draft.json   VLM-drafted DRAFT (not verified)
 │   ├── baseline_vlm.py
 │   └── score.py
 └── tests/
