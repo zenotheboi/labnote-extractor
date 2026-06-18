@@ -51,7 +51,7 @@ One line each:
 - **ocsr** — read drawn structures to SMILES, gated through RDKit for validity.
 - **normalize** — restore symbols/units (`°C`, `2θ`, `cm²`, `1.5E-4`) and detect strikethrough.
 - **chem_resolve** — resolve printed labels to canonical SMILES via OPSIN/PubChem (primary), OCSR confirms.
-- **rescan** — targeted second pass (cheaper model) that recovers drawings the first pass missed, e.g. EtOH.
+- **rescan** — targeted second pass on a cheaper model (`claude-opus-4-7`) that recovers drawings the first pass missed, e.g. EtOH (see "Structure recovery" below).
 - **classify** — infer the experiment type from the extracted text.
 - **registry.dispatch** — route to the matching experiment plugin (schema + validator).
 - **domain validator** — re-derive `J → I → Q → n → mass` and cross-check every step against the page.
@@ -61,6 +61,19 @@ The **validation layer** is the differentiator: a misread digit breaks the Farad
 chain and is localized automatically, and the validator *flags* disagreement for a
 human rather than silently overwriting what the chemist wrote. See
 [`DESIGN.md`](DESIGN.md) for the full rationale.
+
+**Structure recovery — the second pass (why/how/when).** A single read of the page
+can *group* drawings: here the first pass merged the `diglyme : EtOH` solvent
+sketch and missed EtOH as its own structure. So after `chem_resolve`, a targeted
+second pass runs on a deliberately cheaper model (`claude-opus-4-7`): it is handed
+the structure labels already found and asked **only** for drawings *not* in that
+list. Each new hit is name-resolved, RDKit-gated, and de-duplicated by normalized
+label — so a coordination variant like `[Li(12-crown-4)]+` is not re-added as a
+copy of `12-crown-4`. The point is that it *confirms a drawing actually exists* on
+the page before adding it, rather than inferring one from the solvent text (a
+`text_inferred` fallback exists for that but is disabled by default, precisely
+because it asserts a drawing from a label alone). This pass is what lifts SMILES
+from 4/6 to 5/6, recorded with honest `rescan` provenance.
 
 ## Results
 
