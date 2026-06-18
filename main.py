@@ -36,6 +36,8 @@ from pipeline.semantics.electrodeposition import validate_deposition
 from pipeline.perception.layout import segment as _layout_segment
 from pipeline.perception.ocr_math import extract as _ocr_math_extract
 from pipeline.perception.normalize import run as _normalize
+from pipeline.perception import ocsr
+from reference import chem_resolve
 
 _ROOT = Path(__file__).parent
 _SCHEMA_PATH = _ROOT / "schema" / "electrodeposition.schema.json"
@@ -43,7 +45,7 @@ _RUNS_DIR = _ROOT / "eval" / "runs"
 _CACHE_DIR = _ROOT / "eval" / "cache"   # raw recogniser output, keyed by image
 
 MODEL = "claude-opus-4-8"
-CURRENT_PHASE = 3   # bump as each build-order phase lands
+CURRENT_PHASE = 4   # bump as each build-order phase lands
 
 
 def _model_slug(model: str = MODEL) -> str:
@@ -74,6 +76,9 @@ def run(image_path: str,
     # --- Phase 3: accuracy routing ---
     _route_calc_block(result, regions)  # route calc lines -> ocr_math parser
     _normalize(result)                  # symbol/unit + strikethrough post-proc
+
+    # --- Phase 4: chemistry ---
+    _resolve_structures(result)         # name-resolution + RDKit-gated OCSR
 
     # --- Phase 2: trust layer ---
     _attach_self_consistency(result)   # re-derive the electrochem chain
@@ -215,6 +220,50 @@ def _route_calc_block(result: dict, regions: list) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Phase 4 — chemistry: name-resolution-first, RDKit-gated OCSR cross-check
+# ---------------------------------------------------------------------------
+
+_METALS = ("Li", "Cu", "Ni", "Na", "Zn", "Mg", "K")
+
+
+def _resolve_structures(result: dict) -> None:
+    """For each drawn-molecule field, reconcile the recogniser's SMILES with
+    name-resolution (chem_resolve) and gate through RDKit. Canonical SMILES is
+    stored back in the field; the original is kept in ``raw``.
+    """
+    for key in list(result.keys()):
+        if not key.startswith("structures.") or key.endswith(".formula"):
+            continue
+        env = result.get(key)
+        if not (isinstance(env, dict) and isinstance(env.get("value"), str)):
+            continue
+
+        label = key[len("structures."):]
+        drawn = env["value"]
+        rec = ocsr.reconcile(label, drawn, chem_resolve.resolve(label))
+        if rec["smiles"]:
+            if rec["smiles"] != drawn:
+                env.setdefault("raw", drawn)
+            env["value"] = rec["smiles"]
+            env["provenance"] = ("chem_resolve"
+                                 if rec["source"] in ("consensus", "label_resolution")
+                                 else "ocsr")
+
+
+def _deposited_species(result: dict) -> str:
+    """Identify the deposited metal from the salt / reaction (default Li)."""
+    text = " ".join(
+        str(result.get(k, {}).get("value", ""))
+        for k in ("electrolyte.salt", "reaction.equation")
+        if isinstance(result.get(k), dict)
+    )
+    for metal in _METALS:
+        if metal.lower() in text.lower():
+            return metal
+    return "Li"
+
+
+# ---------------------------------------------------------------------------
 # Phase 2 — trust layer: re-derive the electrochemistry, cross-check the page
 # ---------------------------------------------------------------------------
 
@@ -230,11 +279,12 @@ def _attach_self_consistency(result: dict) -> None:
     if None in (J, area, t_min):
         return
 
+    # z and molar mass come from reference/chem_resolve (de-hardcoded), keyed
+    # off the deposited metal; chem_resolve falls back to Li if unresolved.
+    consts = chem_resolve.deposition_constants(_deposited_species(result))
     inputs = {
         "J_mA_cm2": J, "area_cm2": area, "t_min": t_min,
-        # z and molar mass come from reference/chem_resolve in Phase 4;
-        # fall back to Li defaults until then.
-        "z": 1, "M_g_mol": 6.94,
+        "z": consts["z"], "M_g_mol": consts["molar_mass"],
     }
     written = {
         "I_A":    _flat_float(result, "calculations.current.value"),

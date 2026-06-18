@@ -1,6 +1,7 @@
 # ── Core (always required) ────────────────────────────────────────────────
 jsonschema>=4.0
 pytest>=7.4
+anthropic>=0.40              # whole-page VLM recogniser
 
 # ── Classical CV  (preprocess, layout) ────────────────────────────────────
 numpy>=1.24
@@ -16,16 +17,15 @@ opencv-python-headless>=4.8
 # pix2tex>=0.1.1              # LaTeX OCR (pix2tex)
 
 # ── OCSR — chemical structure recognition (ocsr) ──────────────────────────
-# DECIMER: install separately — heavy TensorFlow deps, see README
-#   pip install decimer
+rdkit>=2023.9                 # SMILES validity gate, canonicalisation, Tanimoto
+# DECIMER: install separately — heavy TensorFlow deps, see README. ocsr.py uses
+# it when present; otherwise the recogniser's drawn SMILES is RDKit-gated instead.
+#   pip install decimer       # (recommend a separate venv — numpy/TF pins)
 # MolScribe / MolNexTR: see README for install instructions
-# rdkit: install via conda (preferred):
-#   conda install -c conda-forge rdkit
-# or: pip install rdkit
 
 # ── Name resolution (chem_resolve) ────────────────────────────────────────
-# py2opsin>=2.1               # OPSIN IUPAC→SMILES wrapper (requires JRE)
-# requests>=2.28              # PubChem REST API
+py2opsin>=2.0                 # OPSIN IUPAC→SMILES wrapper (requires a JRE)
+# requests>=2.28              # PubChem REST API (optional fallback)
 
 # ── Optional ──────────────────────────────────────────────────────────────
 # pint>=0.22                  # unit handling / dimensional analysis
