@@ -16,12 +16,12 @@ Design decision (graded):
     Name-resolution (OPSIN/PubChem, reference/chem_resolve.py) is the PRIMARY
     strategy for known reagents; OCSR is a cross-check. Where the drawing and the
     name DISAGREE (e.g. a sketch that does not match the resolved name), the drawn
-    structure is kept per CLAUDE.md ("record each AS DRAWN").
+    structure is kept as drawn (record each structure AS DRAWN).
     NOTE: the page has TWO solvent drawings (diglyme + EtOH) — expect two separate
     structures, not one merged glyme structure.
 
-DECIMER is an optional, heavy TensorFlow dependency (CLAUDE.md recommends a
-separate venv). When it is not installed, the recogniser-provided SMILES (the
+DECIMER is an optional, heavy TensorFlow dependency (a separate venv is
+recommended; see README). When it is not installed, the recogniser-provided SMILES (the
 whole-page VLM's reading of the drawing) is used as the OCSR candidate and gated
 through RDKit just the same — the interface is identical, so swapping DECIMER in
 changes nothing downstream.

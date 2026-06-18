@@ -1,7 +1,7 @@
 # DESIGN.md — Design decisions & rationale
 
 The *why* behind the pipeline, written for reviewers. `README.md` is the quick
-tour; `CLAUDE.md` is the build spec; this is the reasoning, each decision as
+tour; this document is the reasoning, each decision as
 **decision → why → what I considered and rejected**.
 
 The thesis: the assignment notes that off-the-shelf OCR and VLMs do poorly on a

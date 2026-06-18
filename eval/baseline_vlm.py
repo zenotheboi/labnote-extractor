@@ -22,8 +22,8 @@ Usage:
     python eval/baseline_vlm.py data/page57.jpg
     python eval/score.py eval/runs/baseline_sonnet-4-6.json eval/ground_truth/page57.json
 
-WARNING: do not use this baseline's output as ground truth (circular — see
-CLAUDE.md §ground-truth-warning).
+WARNING: do not use this baseline's output as ground truth (circular — see the
+ground-truth warning in DESIGN.md).
 """
 
 from __future__ import annotations
