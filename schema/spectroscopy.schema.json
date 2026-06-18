@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labnote-extractor/schema/spectroscopy.schema.json",
+  "title": "Spectroscopy notebook page — STUB",
+  "description": "Schema for UV-vis / absorbance notebook pages. Pending implementation of the spectroscopy plugin.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "experiment_type"],
+
+  "properties": {
+    "schema_version":  { "const": "spectroscopy/1.0" },
+    "experiment_type": { "const": "spectroscopy" }
+  },
+
+  "$defs": {
+    "field": { "$ref": "base.schema.json#/$defs/field" }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://labnote-extractor/schema/base.schema.json",
+  "title": "Lab-notebook base field envelope",
+  "description": "Shared auditable envelope for every value extracted from a page. Referenced by all experiment-type schemas.",
+
+  "$defs": {
+    "provenance": {
+      "description": "Which pipeline stage produced this value.",
+      "enum": ["ocr_text", "ocr_math", "ocsr", "chem_resolve",
+               "layout", "normalize", "classify", "derived"]
+    },
+
+    "bbox": {
+      "description": "[x, y, width, height] in source-image pixels.",
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 4,
+      "maxItems": 4
+    },
+
+    "field": {
+      "description": "The auditable envelope every extracted value carries.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "confidence", "provenance", "bbox"],
+      "properties": {
+        "value":      { "type": ["number", "string", "boolean", "null"] },
+        "unit":       { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "bbox":       { "$ref": "#/$defs/bbox" },
+        "raw":        { "type": "string",
+                        "description": "Literal text as written, before normalisation." }
+      }
+    }
+  }
+}

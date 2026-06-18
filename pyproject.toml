@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "labnote-extractor"
+version = "0.1.0"
+description = "Parse scanned handwritten chemistry lab-notebook pages into schema-validated JSON."
+requires-python = ">=3.9"
+dependencies = [
+    "jsonschema>=4.0",
+]
+
+[project.optional-dependencies]
+cv = [
+    "numpy>=1.24",
+    "pillow>=10.0",
+    "opencv-python-headless>=4.8",
+]
+eval = [
+    "numpy>=1.24",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipeline*", "reference*", "eval*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths  = ["tests"]
