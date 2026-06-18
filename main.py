@@ -33,13 +33,16 @@ import jsonschema
 # Trigger plugin self-registration
 import pipeline.semantics.electrodeposition  # noqa: F401
 from pipeline.semantics.electrodeposition import validate_deposition
+from pipeline.perception.layout import segment as _layout_segment
+from pipeline.perception.ocr_math import extract as _ocr_math_extract
+from pipeline.perception.normalize import run as _normalize
 
 _ROOT = Path(__file__).parent
 _SCHEMA_PATH = _ROOT / "schema" / "electrodeposition.schema.json"
 _RUNS_DIR = _ROOT / "eval" / "runs"
 
 MODEL = "claude-opus-4-8"
-CURRENT_PHASE = 2   # bump as each build-order phase lands
+CURRENT_PHASE = 3   # bump as each build-order phase lands
 
 
 def _model_slug(model: str = MODEL) -> str:
@@ -56,9 +59,14 @@ def run(image_path: str,
     ``eval/runs/phase{phase}_{model_slug}.json`` (kept for cross-phase scoring).
     """
     from pipeline.perception.preprocess import preprocess
-    preprocess(image_path)  # deskew + binarize (artefacts used by later phases)
+    preprocessed = preprocess(image_path)   # deskew + binarize
 
-    result = _vlm_extract(image_path, model)
+    regions = _layout_segment(preprocessed)  # Phase 3: layout segmentation
+    result = _vlm_extract(image_path, model)  # whole-page recogniser
+
+    # --- Phase 3: accuracy routing ---
+    _route_calc_block(result, regions)  # route calc lines -> ocr_math parser
+    _normalize(result)                  # symbol/unit + strikethrough post-proc
 
     # --- Phase 2: trust layer ---
     _attach_self_consistency(result)   # re-derive the electrochem chain
@@ -154,6 +162,27 @@ def _parse_json_response(text: str) -> dict:
                              "confidence": 0.0, "provenance": "ocr_text",
                              "bbox": [0, 0, 0, 0]},
             "_raw": [text[:2000]]}
+
+
+# ---------------------------------------------------------------------------
+# Phase 3 — accuracy routing: send the calc block to the math parser
+# ---------------------------------------------------------------------------
+
+def _route_calc_block(result: dict, regions: list) -> None:
+    """Route the recogniser's calc-block lines to ocr_math and merge the parsed
+    fields. Layout supplies region geometry; the per-line text comes from the
+    whole-page recogniser (plain_text). Parsed fields fill GAPS only — they never
+    overwrite a value the recogniser already provided.
+    """
+    calc_lines = [ln for ln in (result.get("plain_text") or []) if "=" in str(ln)]
+    calc_regions = [r for r in regions if r.get("type") == "calc_block"]
+    if not calc_regions:
+        calc_regions = [{"type": "calc_block", "bbox": [0, 0, 0, 0]}]
+    for r in calc_regions:
+        r["text_lines"] = calc_lines
+
+    for key, env in _ocr_math_extract(calc_regions).items():
+        result.setdefault(key, env)
 
 
 # ---------------------------------------------------------------------------

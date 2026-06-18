@@ -1,0 +1,3 @@
+phase,model,text_sim,scalar,smiles,table,missing_count
+2,opus-4-8,97,69,60,100,1
+3,opus-4-8,97,82,60,100,0
