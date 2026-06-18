@@ -40,6 +40,7 @@ from pipeline.perception.normalize import run as _normalize
 _ROOT = Path(__file__).parent
 _SCHEMA_PATH = _ROOT / "schema" / "electrodeposition.schema.json"
 _RUNS_DIR = _ROOT / "eval" / "runs"
+_CACHE_DIR = _ROOT / "eval" / "cache"   # raw recogniser output, keyed by image
 
 MODEL = "claude-opus-4-8"
 CURRENT_PHASE = 3   # bump as each build-order phase lands
@@ -52,8 +53,14 @@ def _model_slug(model: str = MODEL) -> str:
 def run(image_path: str,
         output_path: str | None = "output.json",
         phase: int = CURRENT_PHASE,
-        model: str = MODEL) -> dict:
+        model: str = MODEL,
+        refresh: bool = False) -> dict:
     """Run the pipeline on a scanned page and emit flat-key JSON.
+
+    The recogniser (VLM) output is cached per image, so only the FIRST run on a
+    page calls the VLM; later runs re-read the cache and re-run just the
+    deterministic wrapper (layout/ocr_math/normalize/validator) — no API call,
+    no API key needed. Pass ``refresh=True`` to force a fresh VLM call.
 
     Writes the result to ``output_path`` AND to
     ``eval/runs/phase{phase}_{model_slug}.json`` (kept for cross-phase scoring).
@@ -61,8 +68,8 @@ def run(image_path: str,
     from pipeline.perception.preprocess import preprocess
     preprocessed = preprocess(image_path)   # deskew + binarize
 
-    regions = _layout_segment(preprocessed)  # Phase 3: layout segmentation
-    result = _vlm_extract(image_path, model)  # whole-page recogniser
+    regions = _layout_segment(preprocessed)        # Phase 3: layout segmentation
+    result = _recognize(image_path, model, refresh)  # whole-page recogniser (cached)
 
     # --- Phase 3: accuracy routing ---
     _route_calc_block(result, regions)  # route calc lines -> ocr_math parser
@@ -88,6 +95,28 @@ def run(image_path: str,
 # ---------------------------------------------------------------------------
 # VLM recognition — single whole-page call, returns the flat-key shape
 # ---------------------------------------------------------------------------
+
+def _recognize(image_path: str, model: str = MODEL, refresh: bool = False) -> dict:
+    """Return the raw recogniser output for an image, using a per-image cache.
+
+    Cache hit  -> load from eval/cache/ (no VLM call, no API key required).
+    Cache miss -> call the VLM, save the raw output, return it.
+    ``refresh=True`` forces a fresh VLM call and overwrites the cache.
+
+    The cache holds the recogniser output ONLY — before any wrapper stage — so
+    the deterministic wrapper re-runs cleanly on every iteration.
+    """
+    cache_path = _CACHE_DIR / f"{Path(image_path).stem}.{_model_slug(model)}.recognizer.json"
+    if cache_path.exists() and not refresh:
+        print(f"[recognizer] cache hit: {cache_path} (no VLM call)", file=sys.stderr)
+        return json.loads(cache_path.read_text())
+
+    result = _vlm_extract(image_path, model)
+    _CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(json.dumps(result, indent=2))
+    print(f"[recognizer] VLM call made; cached -> {cache_path}", file=sys.stderr)
+    return result
+
 
 def _vlm_extract(image_path: str, model: str = MODEL) -> dict:
     """Send the whole page to the VLM and parse out the flat-key JSON."""
@@ -329,10 +358,13 @@ if __name__ == "__main__":
     ap.add_argument("--phase", type=int, default=CURRENT_PHASE,
                     help="build-order phase number (labels the eval/runs/ file)")
     ap.add_argument("--model", default=MODEL)
+    ap.add_argument("--refresh", action="store_true",
+                    help="force a fresh VLM call (ignore + overwrite the cache)")
     args = ap.parse_args()
 
     try:
-        out = run(args.image_path, args.output_path, args.phase, args.model)
+        out = run(args.image_path, args.output_path, args.phase, args.model,
+                  args.refresh)
     except jsonschema.ValidationError as exc:
         loc = " → ".join(str(p) for p in exc.absolute_path) or "<root>"
         print("SCHEMA VALIDATION FAILED (output is NOT schema-valid)", file=sys.stderr)

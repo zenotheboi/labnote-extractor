@@ -52,3 +52,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Recognizer cache (regenerable VLM output, machine-local)
+eval/cache/
