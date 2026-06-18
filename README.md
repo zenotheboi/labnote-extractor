@@ -73,7 +73,8 @@ copy of `12-crown-4`. The point is that it *confirms a drawing actually exists* 
 the page before adding it, rather than inferring one from the solvent text (a
 `text_inferred` fallback exists for that but is disabled by default, precisely
 because it asserts a drawing from a label alone). This pass is what lifts SMILES
-from 4/6 to 5/6, recorded with honest `rescan` provenance.
+from 5/6 to 6/6 (it recovers the missing EtOH), recorded with honest `rescan`
+provenance.
 
 ## Results
 
@@ -82,12 +83,16 @@ the frozen human-verified ground truth (`eval/ground_truth/page57.json`). Baseli
 and pipeline use the **same model**, so the lift isolates the wrapper, not a model
 swap. Regenerate with `python eval/report.py`.
 
+> SMILES are compared as **RDKit canonical structures** (so equivalent SMILES for
+> the same molecule match). Run scoring inside the venv with `rdkit` installed; a
+> plain interpreter without RDKit silently undercounts SMILES.
+
 | Step | text | scalar | SMILES | table | missing | self-consistency |
 |---|---|---|---|---|---|---|
-| Baseline — single VLM call, naive prompt | 85% | 38% | 0% | 0% | 28 | — |
-| + Engineered extraction prompt | 97% | 69% | 67% | 100% | 2 | — |
-| + Symbol/unit normalization + routing | 97% | 82% | 67% | 100% | 1 | 4/4 ✓ · 0 flagged |
-| + Structure recovery (second-pass rescan)  [FINAL] | 97% | 82% | 83% | 100% | 0 | 4/4 ✓ · 0 flagged |
+| Baseline — single VLM call, naive prompt | 85% | 38% | 17% | 0% | 28 | — |
+| + Engineered extraction prompt | 97% | 69% | 83% | 100% | 2 | — |
+| + Symbol/unit normalization + routing | 97% | 82% | 83% | 100% | 1 | 4/4 ✓ · 0 flagged |
+| + Structure recovery (second-pass rescan)  [FINAL] | 97% | 82% | 100% | 100% | 0 | 4/4 ✓ · 0 flagged |
 | **Lift (final − baseline)** | **+12pp** | **+44pp** | **+83pp** | **+100pp** | **−28** |  |
 
 **Headline:** the wrapper lifts a same-model single call by **+44pp scalar**,
@@ -107,7 +112,7 @@ dispatch → bounded correction loop for other experiment types). Full breakdown
 |---|---|---|
 | 1 — Text | 97% text similarity, 100% table cells | ✅ |
 | 2 — Symbols | 82% scalar (°C, 2θ, cm², `1.5E-4`) | ✅ |
-| 3 — Chemistry | 83% SMILES (5/6), formulas, reagents, concentrations | ✅ |
+| 3 — Chemistry | 100% SMILES (6/6: 4 structures + 2 formulas), reagents, concentrations | ✅ |
 | 4 — Experiment | goal / conditions / procedure / results in schema, Faraday validator confirms the physics | ✅ |
 
 ## Run

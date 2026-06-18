@@ -87,7 +87,7 @@ and asked only for drawings *not* in that list; new hits are reconciled via
 `chem_resolve` and RDKit-gated.
 **Why.** The first pass grouped the `diglyme : EtOH` solvent sketch and missed
 EtOH as a separate structure. The rescan looks at the image and *confirms* a second
-drawing exists before adding it — recovering EtOH (SMILES 4/6 → 5/6) with honest
+drawing exists before adding it — recovering EtOH (SMILES 5/6 → 6/6) with honest
 provenance (`rescan`), rather than inferring a drawing from text.
 **Rejected.** Inferring the missing structure from the solvent *text* — it asserts
 a drawing exists from a label alone (a `text_inferred` fallback exists but is

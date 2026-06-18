@@ -4,10 +4,10 @@ Single page (`data/page57.jpg`), all runs on **claude-opus-4-8**, scored against
 
 | Step | text | scalar | SMILES | table | missing | self-consistency |
 |---|---|---|---|---|---|---|
-| Baseline — single VLM call, naive prompt | 85% | 38% | 0% | 0% | 28 | — |
-| + Engineered extraction prompt | 97% | 69% | 67% | 100% | 2 | — |
-| + Symbol/unit normalization + routing | 97% | 82% | 67% | 100% | 1 | 4/4 ✓ · 0 flagged |
-| + Structure recovery (second-pass rescan)  [FINAL] | 97% | 82% | 83% | 100% | 0 | 4/4 ✓ · 0 flagged |
+| Baseline — single VLM call, naive prompt | 85% | 38% | 17% | 0% | 28 | — |
+| + Engineered extraction prompt | 97% | 69% | 83% | 100% | 2 | — |
+| + Symbol/unit normalization + routing | 97% | 82% | 83% | 100% | 1 | 4/4 ✓ · 0 flagged |
+| + Structure recovery (second-pass rescan)  [FINAL] | 97% | 82% | 100% | 100% | 0 | 4/4 ✓ · 0 flagged |
 | **Lift (final − baseline)** | **+12pp** | **+44pp** | **+83pp** | **+100pp** | **-28** |  |
 
 **Headline:** the wrapper lifts a same-model single call by **+44pp scalar**, **+83pp SMILES**, and **+100pp table** accuracy, and drives missing fields from 28 to 0.
