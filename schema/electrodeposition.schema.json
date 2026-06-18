@@ -1,120 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://labnote-extractor/schema/electrodeposition.schema.json",
-  "title": "Electrodeposition notebook page",
-  "description": "Structured, auditable extraction target for a handwritten electrodeposition lab-notebook page. Every value read off the page is wrapped in the `field` envelope so it carries confidence, the stage that produced it (provenance), and its location (bbox). Computed/meta fields are plain.",
+  "title": "Electrodeposition notebook page — flat-key extraction",
+  "description": "Flat dotted-key extraction output. Keys mirror the ground-truth namespace (eval/ground_truth/page57.json) so eval/score.py compares directly after flattening. Each value is one of: an auditable `field` envelope, a list (plain-text lines or table rows), or the validator's self_consistency report. `additionalProperties` constrains EVERY value to one of those shapes, so a malformed field fails loudly even though the key namespace is open.",
   "type": "object",
-  "additionalProperties": false,
-  "required": ["schema_version", "experiment_type", "electrolyte", "runs"],
-
-  "properties": {
-    "schema_version": { "const": "electrodeposition/1.0" },
-    "experiment_type": { "const": "electrodeposition" },
-
-    "page":           { "$ref": "#/$defs/field" },
-    "continued_from": { "$ref": "#/$defs/field" },
-    "date":           { "$ref": "#/$defs/field" },
-    "project":        { "$ref": "#/$defs/field" },
-    "goal":           { "$ref": "#/$defs/field" },
-
-    "electrolyte": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["salt", "concentration"],
-      "properties": {
-        "salt":          { "$ref": "#/$defs/field" },
-        "concentration": { "$ref": "#/$defs/field" },
-        "solvent":       { "$ref": "#/$defs/field" },
-        "solvent_ratio": { "$ref": "#/$defs/field" },
-        "volume":        { "$ref": "#/$defs/field" },
-        "additive": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["name"],
-          "properties": {
-            "name":   { "$ref": "#/$defs/field" },
-            "amount": { "$ref": "#/$defs/field" }
-          }
-        }
-      }
-    },
-
-    "conditions": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "temperature":   { "$ref": "#/$defs/field" },
-        "atmosphere":    { "$ref": "#/$defs/field" },
-        "water_content": { "$ref": "#/$defs/field" }
-      }
-    },
-
-    "cell": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "working_electrode":   { "$ref": "#/$defs/field" },
-        "counter_electrode":   { "$ref": "#/$defs/field" },
-        "reference_electrode": { "$ref": "#/$defs/field" }
-      }
-    },
-
-    "runs": {
-      "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "#/$defs/run" }
-    },
-
-    "calculations": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "Written results read off the page, plus the validator's re-derivation result.",
-      "properties": {
-        "current":          { "$ref": "#/$defs/field" },
-        "charge":           { "$ref": "#/$defs/field" },
-        "moles_deposited":  { "$ref": "#/$defs/field" },
-        "mass_deposited":   { "$ref": "#/$defs/field" },
-        "self_consistency": { "$ref": "#/$defs/selfConsistency" }
-      }
-    },
-
-    "structures": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/structure" }
-    },
-
-    "results": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "film_observation": { "$ref": "#/$defs/field" },
-        "xrd": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["two_theta"],
-            "properties": {
-              "two_theta": { "$ref": "#/$defs/field" },
-              "note":      { "$ref": "#/$defs/field" }
-            }
-          }
-        },
-        "temperature_series": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["time", "temperature"],
-            "properties": {
-              "time":        { "$ref": "#/$defs/field" },
-              "temperature": { "$ref": "#/$defs/field" }
-            }
-          }
-        }
-      }
-    }
-  },
+  "minProperties": 1,
+  "additionalProperties": { "$ref": "#/$defs/fieldOrListOrReport" },
 
   "$defs": {
     "provenance": {
@@ -132,7 +23,7 @@
     },
 
     "field": {
-      "description": "The auditable envelope every extracted value carries.",
+      "description": "The auditable envelope every scalar value carries.",
       "type": "object",
       "additionalProperties": false,
       "required": ["value", "confidence", "provenance", "bbox"],
@@ -147,23 +38,8 @@
       }
     },
 
-    "run": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id"],
-      "properties": {
-        "id":               { "$ref": "#/$defs/field" },
-        "potential":        { "$ref": "#/$defs/field" },
-        "reference":        { "$ref": "#/$defs/field" },
-        "duration":         { "$ref": "#/$defs/field" },
-        "rotation_rate":    { "$ref": "#/$defs/field" },
-        "current_density":  { "$ref": "#/$defs/field" },
-        "electrode_area":   { "$ref": "#/$defs/field" }
-      }
-    },
-
     "selfConsistency": {
-      "description": "Output of electrochem_validator: the J->I->Q->n->mass re-derivation cross-checked against the page.",
+      "description": "Output of the electrochem validator: the J->I->Q->n->mass re-derivation cross-checked against the page. Stored under calculations.self_consistency.",
       "type": "object",
       "additionalProperties": false,
       "required": ["all_passed", "checks"],
@@ -188,20 +64,13 @@
       }
     },
 
-    "structure": {
-      "description": "A molecule on the page. Label is extracted; SMILES/formula are resolved (name->PubChem/OPSIN) and/or read by OCSR, then RDKit-validated.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["label", "source"],
-      "properties": {
-        "label":       { "$ref": "#/$defs/field" },
-        "smiles":      { "type": ["string", "null"] },
-        "formula":     { "type": ["string", "null"] },
-        "source":      { "enum": ["label_resolution", "ocsr", "consensus", "unresolved"] },
-        "rdkit_valid": { "type": "boolean" },
-        "confidence":  { "type": "number", "minimum": 0, "maximum": 1 },
-        "bbox":        { "$ref": "#/$defs/bbox" }
-      }
+    "fieldOrListOrReport": {
+      "description": "Every value in the flat output is exactly one of these.",
+      "oneOf": [
+        { "$ref": "#/$defs/field" },
+        { "type": "array" },
+        { "$ref": "#/$defs/selfConsistency" }
+      ]
     }
   }
 }

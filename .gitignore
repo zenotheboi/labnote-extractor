@@ -39,6 +39,9 @@ models/
 # Generated pipeline output
 *_out.json
 output/
+/output.json
+# NOTE: eval/runs/phase*.json are intentionally TRACKED (kept for cross-phase
+# comparison) — do not ignore them.
 
 # OS
 .DS_Store

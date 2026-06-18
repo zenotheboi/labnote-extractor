@@ -1,0 +1,108 @@
+{
+  "_README": "VERIFY each value against the image before trusting it. Pre-filled to save typing, NOT to be trusted blindly. Fix anything wrong. Delete 'uncertain' once you've checked a field. Scalars: plain value. Molecules: canonical SMILES (RDKit-compared). Tables: list of row objects.",
+
+  "_plain_text_note": "LEVEL 1 target: the whole page transcribed verbatim, line by line, as written (including struck-out text marked [struck:...]). Everything below this is the Level 3/4 PARSED breakdown of the same content. Verify each line against the image.",
+  "plain_text": [
+    "Page 57",
+    "cont. from pg 56",
+    "Project: Li electrodeposition - glyme electrolytes",
+    "June 4",
+    "Goal: Screen electrolyte 240604-B for stable Li plating at 30 °C",
+    "Electrolyte: 1M LiTFSI in [struck: diglyme] diglyme : EtOH (4:1 v/v), 20 mL tot",
+    "Add [struck: 8%] 5 mol% 12-crown-4 as additive. Stir 20min",
+    "→ T @ 22.4 °C, glovebox H2O < 1 ppm",
+    "Working elec. : glassy C RDE (0.3 cm²) ; CE: Li foil ; ref: Ag/AgCl",
+    "Deposition run 240604-B1",
+    "Apply -0.45V vs Ag/AgCl, 90 min, w = 1600 rpm",
+    "J = 0.50 mA/cm² and 0.3 cm²",
+    "0.5 mA/cm² · 0.3 cm² = 1.5E-4 A",
+    "t = 90min = 5400 s",
+    "Q = 1.5E-4 A · 5400 s = 0.81 A·s = 0.81 C",
+    "n = Q/zF = 0.81 C / 96485 C/mol = 8.4 E-6 mol · 6.94 g Li/mol Li = 5.8E-5 g",
+    "1 e⁻ = 1 Li⁺",
+    "[Li(12-crown-4)]⁺ + e⁻ → Li + (12-crown-4)   (-0.45V vs Ag/AgCl)",
+    "LiTFSI",
+    "Electrode Temperature test : hot plate at 30 °C",
+    "0 min 22.4 °C    20 min 30.1 C",
+    "1 min 23.1 °C    40 min 31.5 C",
+    "5 min 25.6 C     1 hr 32.0 C",
+    "10 min 27.9 C    1 hr 30 min 32.6 C",
+    "Film looks grey + dull",
+    "XRD main peak at 2θ = 2.1° (low intens.)",
+    "Shoulder at 2θ = 4.7°"
+  ],
+
+  "page": 57,
+  "continued_from": 56,
+  "date": "June 4",
+  "project": "Li electrodeposition - glyme electrolytes",
+  "goal": "Screen electrolyte 240604-B for stable Li plating at 30 C",
+
+  "electrolyte.salt": "LiTFSI",
+  "electrolyte.concentration": "1 M",
+  "electrolyte.solvent": "diglyme:EtOH",
+  "electrolyte.solvent_ratio": "4:1 v/v",
+  "electrolyte.volume": "20 mL",
+  "electrolyte.additive.name": "12-crown-4",
+  "electrolyte.additive.amount": "5 mol%",
+
+  "procedure.steps": [
+    "Add 5 mol% 12-crown-4 as additive. Stir 20 min",
+    "T @ 22.4 °C, glovebox H2O < 1 ppm"
+  ],
+  "procedure.stir_time": "20 min",
+  "conditions.temperature": "22.4 °C",
+  "conditions.atmosphere": "glovebox",
+  "conditions.water_content": "< 1 ppm",
+
+  "cell.working_electrode": "glassy C RDE",
+  "cell.working_electrode_area": "0.3 cm^2",
+  "cell.counter_electrode": "Li foil",
+  "cell.reference_electrode": "Ag/AgCl",
+
+  "runs[0].id": "240604-B1",
+  "runs[0].potential": "-0.45 V",
+  "runs[0].duration": "90 min",
+  "runs[0].rotation_rate": "1600 rpm",
+  "runs[0].current_density": "0.50 mA/cm^2",
+
+  "calculations.current.value": "1.5e-4 A",
+  "calculations.current.expression": "0.5 mA/cm^2 * 0.3 cm^2 = 1.5e-4 A",
+  "calculations.duration_s": "5400 s",
+  "calculations.duration_s.expression": "t = 90 min = 5400 s",
+  "calculations.charge.value": "0.81 C",
+  "calculations.charge.expression": "Q = 1.5e-4 A * 5400 s = 0.81 A·s = 0.81 C",
+  "calculations.moles_deposited.value": "8.4e-6 mol",
+  "calculations.mass_deposited.value": "5.8e-5 g",
+  "calculations.n_chain.expression": "n = Q/zF = 0.81 C / 96485 C/mol = 8.4 E-6 mol · 6.94 g Li/mol Li = 5.8E-5 g",
+  "calculations.n_chain.annotation": "1 e- = 1 Li+",
+  "_calc_note": "VERIFY against page char-by-char. The moles+mass step is ONE chained line (n_chain). Denominator is zF (z=1, per the '1 e- = 1 Li+' annotation under the arrow), NOT 2F. value fields re-derived & trustworthy; expression as-WRITTEN.",
+
+  "reaction.equation": "[Li(12-crown-4)]+ + e- -> Li + 12-crown-4",
+  "reaction.conditions": "-0.45 V vs Ag/AgCl",
+
+  "structures.12-crown-4": "C1COCCOCCOCCO1",
+  "structures.LiTFSI": "[Li+].[N-](S(=O)(=O)C(F)(F)F)S(=O)(=O)C(F)(F)F",
+  "structures.LiTFSI.formula": "C2F6LiNO4S2",
+  "structures.12-crown-4.formula": "C8H16O4",
+  "structures.diglyme": "COCCOCCO",
+  "_smiles_note": "Only molecules DRAWN on the page go here: 12-crown-4 / [Li(12-crown-4)]+, LiTFSI, and the small zig-zag labelled diglyme. Record each AS DRAWN. The diglyme sketch ends in -OH (COCCOCCO), which differs from true diglyme (COCCOCCOC) — keep what is drawn; the WORD 'diglyme' is captured separately in electrolyte.solvent. Verify the OH terminus on the full-res page.",
+
+  "results.film_observation": "grey, dull",
+  "results.xrd": [
+    { "two_theta": "2θ = 2.1°", "note": "main peak, low intensity" },
+    { "two_theta": "2θ = 4.7°", "note": "shoulder" }
+  ],
+
+  "results.temperature_test.label": "Electrode temperature test: hot plate at 30 °C",
+  "results.temperature_test.readings": [
+    { "time_min": 0,  "temp_C": 22.4 },
+    { "time_min": 1,  "temp_C": 23.1, "uncertain": true },
+    { "time_min": 5,  "temp_C": 25.6 },
+    { "time_min": 10, "temp_C": 27.9 },
+    { "time_min": 20, "temp_C": 30.1 },
+    { "time_min": 40, "temp_C": 31.5 },
+    { "time_min": 60, "temp_C": 32.0 },
+    { "time_min": 90, "temp_C": 32.6 }
+  ]
+}
