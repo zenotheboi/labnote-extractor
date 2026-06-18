@@ -85,8 +85,9 @@
   "structures.LiTFSI": "[Li+].[N-](S(=O)(=O)C(F)(F)F)S(=O)(=O)C(F)(F)F",
   "structures.LiTFSI.formula": "C2F6LiNO4S2",
   "structures.12-crown-4.formula": "C8H16O4",
-  "structures.diglyme": "COCCOCCO",
-  "_smiles_note": "Only molecules DRAWN on the page go here: 12-crown-4 / [Li(12-crown-4)]+, LiTFSI, and the small zig-zag labelled diglyme. Record each AS DRAWN. The diglyme sketch ends in -OH (COCCOCCO), which differs from true diglyme (COCCOCCOC) — keep what is drawn; the WORD 'diglyme' is captured separately in electrolyte.solvent. Verify the OH terminus on the full-res page.",
+  "structures.diglyme": "COCCOCCOC",
+  "structures.EtOH": "CCO",
+  "_smiles_note": "Molecules DRAWN on the page: 12-crown-4 / [Li(12-crown-4)]+, LiTFSI, and TWO separate solvent sketches with arrows from the text 'diglyme : EtOH' — the longer zig-zag = diglyme (COCCOCCOC), the short fragment ending in -OH = EtOH/ethanol (CCO). They are NOT one molecule. Record each as drawn; verify diglyme's far terminus (methyl) on the full-res page.",
 
   "results.film_observation": "grey, dull",
   "results.xrd": [

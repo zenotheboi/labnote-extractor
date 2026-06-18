@@ -11,7 +11,8 @@
     "provenance": {
       "description": "Which pipeline stage produced this value.",
       "enum": ["ocr_text", "ocr_math", "ocsr", "chem_resolve",
-               "layout", "normalize", "classify", "derived"]
+               "layout", "normalize", "classify", "derived",
+               "rescan", "text_inferred"]
     },
 
     "bbox": {

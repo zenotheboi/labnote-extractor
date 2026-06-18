@@ -50,7 +50,8 @@ _RUNS_DIR = _ROOT / "eval" / "runs"
 _CACHE_DIR = _ROOT / "eval" / "cache"   # raw recogniser output, keyed by image
 
 MODEL = "claude-opus-4-8"
-CURRENT_PHASE = 5   # bump as each build-order phase lands
+RESCAN_MODEL = "claude-opus-4-7"   # cheaper second-pass model
+CURRENT_PHASE = 7   # bump as each build-order phase lands
 
 
 def _model_slug(model: str = MODEL) -> str:
@@ -83,7 +84,11 @@ def run(image_path: str,
     _normalize(result)                  # symbol/unit + strikethrough post-proc
 
     # --- Phase 4: chemistry ---
-    _resolve_structures(result)         # name-resolution + RDKit-gated OCSR
+    _resolve_structures(result)                          # name-resolution + RDKit-gated OCSR
+    # _fill_solvent_structures(result)                   # DISABLED: text-inference fallback pre-empted
+    #                                                      the rescan; off so the rescan is the sole
+    #                                                      recovery path (clean test of its value).
+    _rescan_missing_structures(image_path, result)       # second-pass: targeted VLM rescan
 
     # --- Phase 2: trust layer ---
     _attach_self_consistency(result)   # re-derive the electrochem chain
@@ -253,6 +258,148 @@ def _resolve_structures(result: dict) -> None:
             env["provenance"] = ("chem_resolve"
                                  if rec["source"] in ("consensus", "label_resolution")
                                  else "ocsr")
+
+
+def _fill_solvent_structures(result: dict) -> None:
+    """Text-inference fallback: add structure keys for solvent components the VLM grouped.
+
+    ASSUMPTION: every chemical name in electrolyte.solvent has a corresponding
+    drawing on the page. This is often true in lab notebooks but NOT guaranteed —
+    a page may list solvents as plain text without structural drawings.
+    Provenance is 'text_inferred' to flag that no drawing was confirmed by the VLM.
+    The _rescan_missing_structures() second pass is the principled replacement;
+    this fallback fires first so rescan only needs to check what's truly unresolved.
+    """
+    solvent_env = result.get("electrolyte.solvent")
+    if not isinstance(solvent_env, dict):
+        return
+    solvent_str = str(solvent_env.get("value", ""))
+    if not solvent_str:
+        return
+
+    import re as _re
+    for label in _re.split(r"[:/+,]", solvent_str):
+        label = label.strip()
+        if not label:
+            continue
+        key = f"structures.{label}"
+        if key in result:
+            continue
+        resolved = chem_resolve.resolve(label)
+        if resolved and resolved.get("smiles"):
+            result[key] = {
+                "value":      resolved["smiles"],
+                "confidence": 0.6,
+                "provenance": "text_inferred",   # no drawing confirmed; name only
+                "bbox":       [0, 0, 0, 0],
+            }
+
+
+_RESCAN_PROMPT = """\
+A first-pass model has already extracted these molecular structure drawings from this page:
+  {detected}
+
+Your ONLY task: look carefully at the page image and identify any molecular structure
+drawings that have a label NOT in the list above. Do NOT re-extract ones already found.
+
+Return a JSON array. Each element must have "label" (text written next to the drawing)
+and "smiles" (SMILES as drawn). Return [] if nothing is missing.
+
+Example: [{{"label": "EtOH", "smiles": "CCO"}}]
+Return ONLY the JSON array, no explanation.
+"""
+
+
+def _rescan_missing_structures(image_path: str, result: dict,
+                                model: str = RESCAN_MODEL) -> None:
+    """Second-pass VLM scan: find drawings the first pass missed.
+
+    Sends the image with the already-detected labels so the model only needs to
+    report genuinely new drawings. Results are reconciled via chem_resolve +
+    ocsr.reconcile and stored with provenance='rescan'. No caching — this pass
+    is cheap and depends on what the first pass found.
+    """
+    detected = [
+        key[len("structures."):]
+        for key in result
+        if key.startswith("structures.") and not key.endswith(".formula")
+    ]
+    if not detected:
+        return
+
+    import anthropic
+    api_key = _load_api_key()
+    suffix = Path(image_path).suffix.lower()
+    media_type = {
+        ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+        ".png": "image/png", ".tiff": "image/tiff", ".tif": "image/tiff",
+    }.get(suffix, "image/jpeg")
+    with open(image_path, "rb") as fh:
+        img_b64 = base64.standard_b64encode(fh.read()).decode()
+
+    prompt = _RESCAN_PROMPT.format(detected=", ".join(detected))
+    client = anthropic.Anthropic(api_key=api_key)
+    response = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        thinking={"type": "adaptive"},
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "image", "source": {"type": "base64",
+                 "media_type": media_type, "data": img_b64}},
+                {"type": "text", "text": prompt},
+            ],
+        }],
+    )
+    raw = next((b.text for b in response.content if hasattr(b, "text")), "").strip()
+
+    try:
+        arr_match = re.search(r"\[.*\]", raw, re.DOTALL)
+        missed = json.loads(raw if raw.startswith("[") else (arr_match.group(0) if arr_match else "[]"))
+    except Exception:
+        log.warning("[rescan] could not parse response: %s", raw[:200])
+        return
+
+    # Duplicate suppression against already-detected structures, by BOTH:
+    #  - canonical SMILES (catches identical structures), and
+    #  - normalised label (catches coordination/charge variants the VLM may draw
+    #    differently across runs, e.g. "[Li(12-crown-4)]+" vs "12-crown-4", whose
+    #    SMILES differ only by a .[Li+] fragment and so dodge a SMILES-only check).
+    structure_items = [
+        (k, v) for k, v in result.items()
+        if k.startswith("structures.") and not k.endswith(".formula")
+        and isinstance(v, dict)
+    ]
+    existing_smiles = {ocsr.canonical(v.get("value", "")) for _, v in structure_items} - {None}
+    existing_labels = {chem_resolve._key(k[len("structures."):]) for k, _ in structure_items}
+
+    for item in (missed or []):
+        label = str(item.get("label", "")).strip()
+        drawn = str(item.get("smiles", "")).strip()
+        if not label:
+            continue
+        key = f"structures.{label}"
+        if key in result:
+            continue
+        # Skip coordination/charge variants of a structure we already have
+        if chem_resolve._key(label) in existing_labels:
+            log.info("[rescan] skipping %s — same core label as existing entry", label)
+            continue
+        rec = ocsr.reconcile(label, drawn, chem_resolve.resolve(label))
+        if not rec["smiles"]:
+            continue
+        # Skip if this is a duplicate of a structure we already have
+        if ocsr.canonical(rec["smiles"]) in existing_smiles:
+            log.info("[rescan] skipping %s — same canonical SMILES as existing entry", label)
+            continue
+        result[key] = {
+            "value":      rec["smiles"],
+            "confidence": 0.65,
+            "provenance": "rescan",
+            "bbox":       [0, 0, 0, 0],
+        }
+        log.info("[rescan] added %s = %s (source: %s)", key, rec["smiles"], rec["source"])
 
 
 def _deposited_species(result: dict) -> str:
@@ -432,7 +579,11 @@ MOLECULES drawn on the page — key by the drawn label, value is the SMILES you
 read from the DRAWING (record it as drawn, even if it looks unusual). Envelope
 with provenance "ocsr". Also give the molecular formula where you can:
   "structures.12-crown-4", "structures.LiTFSI", "structures.diglyme",
+  "structures.EtOH",
   "structures.12-crown-4.formula", "structures.LiTFSI.formula"
+NOTE: the page shows a "diglyme : EtOH" label with arrows pointing to TWO
+SEPARATE molecular drawings. Extract diglyme and EtOH as two distinct structure
+keys — do NOT merge them into one entry.
 
 LISTS — plain arrays, NOT envelopes:
   "plain_text": ["<every line of the page, verbatim, top to bottom; mark struck

@@ -24,8 +24,8 @@ rdkit>=2023.9                 # SMILES validity gate, canonicalisation, Tanimoto
 # MolScribe / MolNexTR: see README for install instructions
 
 # ── Name resolution (chem_resolve) ────────────────────────────────────────
-py2opsin>=2.0                 # OPSIN IUPAC→SMILES wrapper (requires a JRE)
-# requests>=2.28              # PubChem REST API (optional fallback)
+py2opsin>=1.2                 # OPSIN IUPAC→SMILES wrapper (requires a JRE)
+requests>=2.28                # PubChem REST API (primary name→SMILES resolution)
 
 # ── Optional ──────────────────────────────────────────────────────────────
 # pint>=0.22                  # unit handling / dimensional analysis

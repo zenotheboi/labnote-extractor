@@ -1,0 +1,694 @@
+{
+  "page.number": {
+    "value": 57,
+    "confidence": 0.99,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "page.continued_from": {
+    "value": 56,
+    "confidence": 0.97,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "date": {
+    "value": "June 4",
+    "confidence": 0.98,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "project.title": {
+    "value": "Li electrodeposition - glyme electrolytes",
+    "confidence": 0.97,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "goal": {
+    "value": "Screen electrolyte 240604-B for stable Li plating at 30\u00b0C",
+    "confidence": 0.96,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.id": {
+    "value": "240604-B",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.salt": {
+    "value": "LiTFSI",
+    "confidence": 0.97,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.concentration": {
+    "value": "1 M",
+    "confidence": 0.97,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.solvent": {
+    "value": "diglyme : EtOH (4:1 v/v)",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.total_volume": {
+    "value": "20 mL",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.additive.name": {
+    "value": "12-crown-4",
+    "confidence": 0.96,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.additive.amount": {
+    "value": "5 mol %",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.additive.amount_note": {
+    "value": "8% crossed out, corrected to 5 mol %",
+    "confidence": 0.85,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.preparation": {
+    "value": "Stir 20 min",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.temperature": {
+    "value": "22.4 C",
+    "confidence": 0.92,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "electrolyte.environment": {
+    "value": "glovebox H2O < 1 ppm",
+    "confidence": 0.94,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "cell.working_electrode": {
+    "value": "glassy C RDE (0.3 cm^2)",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "cell.counter_electrode": {
+    "value": "Li foil",
+    "confidence": 0.96,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "cell.reference_electrode": {
+    "value": "Ag/AgCl",
+    "confidence": 0.96,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].id": {
+    "value": "240604-B1",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].applied_potential": {
+    "value": "-0.45 V vs Ag/AgCl",
+    "confidence": 0.94,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].duration": {
+    "value": "90 min",
+    "confidence": 0.96,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].rotation_rate": {
+    "value": "1600 rpm",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].current_density": {
+    "value": "0.50 mA/cm^2",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "runs[0].electrode_area": {
+    "value": "0.3 cm^2",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.current.value": {
+    "value": "1.5E-4 A",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.time.value": {
+    "value": "5400 s",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.charge.value": {
+    "value": "0.81 C",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.charge.equation": {
+    "value": "Q = 1.5E-4 A \u00b7 5400 s = 0.81 A\u00b7s = 0.81 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.moles_deposited.value": {
+    "value": "8.4E-6 mol",
+    "confidence": 0.9,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.moles_deposited.equation": {
+    "value": "n = Q/zF = 0.81 C / 96485 C/mol = 8.4E-6 mol",
+    "confidence": 0.9,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.faraday_constant": {
+    "value": "96485 C/mol",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.li_molar_mass": {
+    "value": "6.94 g Li / mol Li",
+    "confidence": 0.9,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.mass_deposited.value": {
+    "value": "5.8E-5 g",
+    "confidence": 0.85,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "calculations.note": {
+    "value": "1 e- = 1 Li+",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "structures.Li_12-crown-4": {
+    "value": "[Li+].O1CCOCCOCCOCC1",
+    "confidence": 0.85,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "structures.12-crown-4": {
+    "value": "O1CCOCCOCCOCC1",
+    "confidence": 0.88,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "structures.LiTFSI": {
+    "value": "[Li+].[O-]S(=O)(=O)... C(F)(F)(F)S(=O)(=O)[N-]S(=O)(=O)C(F)(F)F",
+    "confidence": 0.82,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "reaction.scheme": {
+    "value": "[Li(12-crown-4)]+ + e- --(-0.45V vs Ag/AgCl)--> Li + 12-crown-4",
+    "confidence": 0.85,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.title": {
+    "value": "Electrode Temperature test: hot plate at 30\u00b0C",
+    "confidence": 0.94,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[0].time": {
+    "value": "0 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[0].temperature": {
+    "value": "22.4 C",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[1].time": {
+    "value": "1 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[1].temperature": {
+    "value": "23.1 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[2].time": {
+    "value": "5 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[2].temperature": {
+    "value": "25.6 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[3].time": {
+    "value": "10 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[3].temperature": {
+    "value": "27.9 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[4].time": {
+    "value": "20 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[4].temperature": {
+    "value": "30.1 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[5].time": {
+    "value": "40 min",
+    "confidence": 0.95,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[5].temperature": {
+    "value": "31.5 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[6].time": {
+    "value": "1 hr",
+    "confidence": 0.94,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[6].temperature": {
+    "value": "32.0 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[7].time": {
+    "value": "1 hr 30 min",
+    "confidence": 0.94,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "temperature_test.points[7].temperature": {
+    "value": "32.6 C",
+    "confidence": 0.93,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "results.observations": {
+    "value": "Film looks grey + dull",
+    "confidence": 0.92,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "results.xrd.main_peak": {
+    "value": "2\u03b8 = 2.1\u00b0 (low intens.)",
+    "confidence": 0.88,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "results.xrd.shoulder": {
+    "value": "2\u03b8 = 4.7\u00b0",
+    "confidence": 0.88,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "plain_text": {
+    "value": [
+      "Page 57",
+      "cont. from pg 56",
+      "Project: Li electrodeposition - glyme electrolytes",
+      "June 4",
+      "Goal: Screen electrolyte 240604-B for stable Li plating at 30\u00b0C",
+      "Electrolyte: 1M LiTFSI in diglyme : EtOH (4:1 v/v), 20 mL tot",
+      "Add 5 mol % 12-crown-4 as additive. Stir 20 min",
+      "T @ 22.4 C, glovebox H2O < 1 ppm",
+      "Working elec.: glassy C RDE (0.3 cm^2); CE: Li foil; ref: Ag/AgCl",
+      "Deposition run 240604-B1",
+      "Apply -0.45V vs Ag/AgCl, 90 min, w = 1600 rpm",
+      "J = 0.50 mA/cm^2 and 0.3 cm^2",
+      "0.5 mA/cm^2 \u00b7 0.3 cm^2 = 1.5E-4 A",
+      "t = 90 min = 5400 s",
+      "Q = 1.5E-4 A \u00b7 5400 s = 0.81 A\u00b7s = 0.81 C",
+      "n = Q/zF = 0.81 C / 96485 C/mol = 8.4E-6 mol \u00b7 6.94 g Li / mol Li = 5.8E-5 g",
+      "1 e- = 1 Li+",
+      "[Li(12-crown-4)]+ + e- \u2192 Li + (12-crown-4)",
+      "LiTFSI",
+      "Electrode Temperature test: hot plate at 30\u00b0C",
+      "0 min 22.4\u00b0C",
+      "1 min 23.1\u00b0C",
+      "5 min 25.6 C",
+      "10 min 27.9 C",
+      "20 min 30.1 C",
+      "40 min 31.5 C",
+      "1 hr 32.0 C",
+      "1 hr 30 min 32.6 C",
+      "Film looks grey + dull",
+      "XRD main peak at 2\u03b8 = 2.1\u00b0 (low intens.)",
+      "Shoulder at 2\u03b8 = 4.7\u00b0"
+    ],
+    "confidence": 0.9,
+    "provenance": "ocr_text",
+    "bbox": [
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}
