@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import logging
 import os
 import re
 import sys
@@ -32,12 +33,16 @@ import jsonschema
 
 # Trigger plugin self-registration
 import pipeline.semantics.electrodeposition  # noqa: F401
-from pipeline.semantics.electrodeposition import validate_deposition
 from pipeline.perception.layout import segment as _layout_segment
 from pipeline.perception.ocr_math import extract as _ocr_math_extract
 from pipeline.perception.normalize import run as _normalize
 from pipeline.perception import ocsr
+from pipeline.classify import classify
+from pipeline.registry import dispatch, DegradedResult
+from pipeline import correct
 from reference import chem_resolve
+
+log = logging.getLogger(__name__)
 
 _ROOT = Path(__file__).parent
 _SCHEMA_PATH = _ROOT / "schema" / "electrodeposition.schema.json"
@@ -45,7 +50,7 @@ _RUNS_DIR = _ROOT / "eval" / "runs"
 _CACHE_DIR = _ROOT / "eval" / "cache"   # raw recogniser output, keyed by image
 
 MODEL = "claude-opus-4-8"
-CURRENT_PHASE = 4   # bump as each build-order phase lands
+CURRENT_PHASE = 5   # bump as each build-order phase lands
 
 
 def _model_slug(model: str = MODEL) -> str:
@@ -282,20 +287,62 @@ def _attach_self_consistency(result: dict) -> None:
     # z and molar mass come from reference/chem_resolve (de-hardcoded), keyed
     # off the deposited metal; chem_resolve falls back to Li if unresolved.
     consts = chem_resolve.deposition_constants(_deposited_species(result))
-    inputs = {
-        "J_mA_cm2": J, "area_cm2": area, "t_min": t_min,
-        "z": consts["z"], "M_g_mol": consts["molar_mass"],
-    }
-    written = {
-        "I_A":    _flat_float(result, "calculations.current.value"),
-        "Q_C":    _flat_float(result, "calculations.charge.value"),
-        "n_mol":  _flat_float(result, "calculations.moles_deposited.value"),
-        "mass_g": _flat_float(result, "calculations.mass_deposited.value"),
-    }
-    extracted = {k: v for k, v in written.items() if v is not None}
 
-    report = validate_deposition(inputs, extracted)
+    # Build the inter-stage `fields` dict (registry envelope: {value: ...}).
+    fields = {
+        "J_mA_cm2": {"value": J}, "area_cm2": {"value": area},
+        "t_min": {"value": t_min},
+        "z": {"value": consts["z"]}, "M_g_mol": {"value": consts["molar_mass"]},
+    }
+    for key, src in (("I_A", "calculations.current.value"),
+                     ("Q_C", "calculations.charge.value"),
+                     ("n_mol", "calculations.moles_deposited.value"),
+                     ("mass_g", "calculations.mass_deposited.value")):
+        v = _flat_float(result, src)
+        if v is not None:
+            fields[key] = {"value": v}
+
+    # Phase 5: classify the page -> registry.dispatch -> domain validator.
+    # (Pluggable: adding an experiment family is one @plugin, no change here.)
+    cls = classify(_classify_text(result))
+    log.info("classify: %s (confidence %.2f) scores=%s",
+             cls.experiment_type, cls.confidence, cls.scores)
+
+    report = dispatch(cls.experiment_type, fields)
+    if isinstance(report, DegradedResult):
+        log.info("dispatch degraded: %s", report)   # graceful: skip domain check
+        return
+
+    # Phase 5: bounded correction loop (N=2) on any validator-flagged field.
+    report = correct.apply(
+        report, fields, _alt_sources(result),
+        revalidate=lambda f: dispatch(cls.experiment_type, f))
     result["calculations.self_consistency"] = _report_to_dict(report)
+
+
+def _classify_text(result: dict) -> str:
+    """Concatenate all extracted prose for the keyword classifier."""
+    parts = [env["value"] for env in result.values()
+             if isinstance(env, dict) and isinstance(env.get("value"), str)]
+    parts += [str(x) for x in (result.get("plain_text") or [])]
+    return " ".join(parts)
+
+
+def _alt_sources(result: dict) -> dict:
+    """Map each validator field to its alternate source (the equation line), for
+    the correction loop to re-parse if the recogniser's .value is flagged."""
+    pairs = {
+        "I_A":    "calculations.current.expression",
+        "Q_C":    "calculations.charge.expression",
+        "n_mol":  "calculations.n_chain.expression",
+        "mass_g": "calculations.n_chain.expression",
+    }
+    out = {}
+    for key, src in pairs.items():
+        env = result.get(src)
+        if isinstance(env, dict) and env.get("value"):
+            out[key] = {"text_lines": [env["value"]]}
+    return out
 
 
 def _report_to_dict(report) -> dict:
@@ -411,6 +458,9 @@ if __name__ == "__main__":
     ap.add_argument("--refresh", action="store_true",
                     help="force a fresh VLM call (ignore + overwrite the cache)")
     args = ap.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s",
+                        stream=sys.stderr)
 
     try:
         out = run(args.image_path, args.output_path, args.phase, args.model,
